@@ -7,14 +7,21 @@ function Dashboard() {
   const [technicians, setTechnicians] = useState([]);
   const [requests, setRequests] = useState([]);
   const [employees, setEmployees] = useState([]);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
-    // Fetch data from backend APIs
     axios.get("http://localhost:5000/api/critical").then(res => setCritical(res.data));
     axios.get("http://localhost:5000/api/technicians").then(res => setTechnicians(res.data));
     axios.get("http://localhost:5000/api/requests").then(res => setRequests(res.data));
     axios.get("http://localhost:5000/api/employees").then(res => setEmployees(res.data));
   }, []);
+
+  // Filter employees by search
+  const filteredEmployees = employees.filter(emp =>
+    emp.name.toLowerCase().includes(search.toLowerCase()) ||
+    emp.technician.toLowerCase().includes(search.toLowerCase()) ||
+    emp.category.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="dashboard-container">
@@ -27,6 +34,17 @@ function Dashboard() {
         <button>Teams</button>
       </nav>
 
+      <div className="top-bar">
+        <button className="new-button">New</button>
+        <input
+          type="text"
+          placeholder="Search..."
+          className="search-bar"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+      </div>
+
       <div className="dashboard-cards">
         <div className="card critical-card">
           <h3>Critical Equipment</h3>
@@ -35,12 +53,16 @@ function Dashboard() {
 
         <div className="card technician-card">
           <h3>Technician Load</h3>
-          {technicians.map(t => <p key={t.id}>{t.name}: {t.load}%</p>)}
+          {technicians.map(t => (
+            <p key={t._id}>{t.name}: {t.load}%</p>
+          ))}
         </div>
 
         <div className="card requests-card">
           <h3>Open Requests</h3>
-          {requests.map(r => <p key={r.id}>{r.title} - {r.status}</p>)}
+          {requests.map(r => (
+            <p key={r._id}>{r.title} - {r.status}</p>
+          ))}
         </div>
       </div>
 
@@ -57,8 +79,8 @@ function Dashboard() {
             </tr>
           </thead>
           <tbody>
-            {employees.map(emp => (
-              <tr key={emp.id}>
+            {filteredEmployees.map(emp => (
+              <tr key={emp._id}>
                 <td>{emp.name}</td>
                 <td>{emp.technician}</td>
                 <td>{emp.category}</td>
@@ -68,6 +90,11 @@ function Dashboard() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="labels">
+        <span className="label orange">Optimistic Rhinoceros</span>
+        <span className="label green">Crafty Antelope</span>
       </div>
     </div>
   );
